@@ -54,25 +54,22 @@ class HomeView extends State<HomePage> {
   var appService = new AppService();
   ScrollController scrollController = new ScrollController();
   List<Object> list = new List();
+  bool isLoading = false;
 
-  void getMyData() async {
+  void fetchData() async {
     var data = await (appService.getJsonData());
-    data.forEach((item) => {list.add(item)});
-  }
-
-  void fetchData() {
-    for (int i = 0; i < 1; i++) {
-      getMyData();
-    }
+    setState(() {
+      data.forEach((item) => {list.add(item)});
+      isLoading = false;
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    getMyData();
-
+    fetchData();
     scrollController.addListener(() {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+      if (scrollController.position.maxScrollExtent == scrollController.offset && isLoading) {
         fetchData();
       }
     });
@@ -86,32 +83,35 @@ class HomeView extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      backgroundColor: Color(0xff1A355B),
-      body: FutureBuilder(
-        future: appService.getJsonData(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          if (snapshot.data != null) {
-            print(list.length);
-            return Container(
-                child: Center(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: list.length,
-                itemBuilder: (BuildContext context, int index) {
+    return Scaffold(
+        body: FutureBuilder(
+      future: appService.getJsonData(),
+      builder: (BuildContext context, AsyncSnapshot snapshot) {
+        if (snapshot.data != null) {
+          return Container(
+            child: ListView.builder(
+              itemCount: list.length + 1,
+              controller: scrollController,
+              itemBuilder: (BuildContext context, int index) {
+                if (index < list.length) {
                   return makeWidget();
-                },
-              ),
-            ));
-          } else {
-            return Container(
-                child: Center(
-              child: CircularProgressIndicator(),
-            ));
-          }
-        },
-      ),
-    );
+                }
+                if (!isLoading) {
+                  isLoading = true;
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+              },
+            ),
+          );
+        } else {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+      },
+    ));
   }
 
   Widget makeWidget() {
@@ -143,7 +143,7 @@ class HomeView extends State<HomePage> {
 
   List<Widget> makeContainers() {
     List<GestureDetector> movieList = [];
-    for (int i = 0; i < 6; i++) {
+    for (int i = 0; i < 5; i++) {
       counter++;
       movieList.add(new GestureDetector(
         child: Container(
@@ -212,7 +212,6 @@ class HomeView extends State<HomePage> {
                             image: AssetImage(
                               "lib/assets/" + counter.toString() + ".jpg",
                             ),
-                            /*fit: BoxFit.fill,*/
                           ))),
                 ),
               ),
@@ -223,7 +222,7 @@ class HomeView extends State<HomePage> {
               _push(),
             },
       ));
-      if (counter == 6) {
+      if (counter == 5) {
         counter = 0;
       }
     }
