@@ -53,13 +53,13 @@ class HomePage extends StatefulWidget {
 class HomeView extends State<HomePage> {
   var appService = new AppService();
   ScrollController scrollController = new ScrollController();
-  List<Object> list = new List();
+  final myList = new List();
   bool isLoading = false;
 
   void fetchData() async {
     var data = await (appService.getJsonData());
     setState(() {
-      data.forEach((item) => {list.add(item)});
+      data.forEach((item) => {myList.add(item)});
       isLoading = false;
     });
   }
@@ -90,11 +90,11 @@ class HomeView extends State<HomePage> {
         if (snapshot.data != null) {
           return Container(
             child: ListView.builder(
-              itemCount: list.length + 1,
+              itemCount: myList.length + 1,
               controller: scrollController,
               itemBuilder: (BuildContext context, int index) {
-                if (index < list.length) {
-                  return makeWidget();
+                if (index < myList.length) {
+                  return makeWidget(myList[index], index);
                 }
                 if (!isLoading) {
                   isLoading = true;
@@ -114,7 +114,7 @@ class HomeView extends State<HomePage> {
     ));
   }
 
-  Widget makeWidget() {
+  Widget makeWidget(theList, index) {
     return new Container(
       padding: EdgeInsets.symmetric(vertical: 5),
       height: 320,
@@ -123,8 +123,7 @@ class HomeView extends State<HomePage> {
           new Row(children: <Widget>[
             new Container(
               margin: EdgeInsets.only(left: 10),
-              child: new Text(
-                "dsfsdfsdf",
+              child: new Text( theList["name"],
                 textAlign: TextAlign.start,
               ),
             ),
@@ -132,7 +131,7 @@ class HomeView extends State<HomePage> {
           new Container(
             height: 280,
             child: ListView(
-                scrollDirection: Axis.horizontal, children: makeContainers()),
+                scrollDirection: Axis.horizontal, children: makeContainers(theList)),
           ),
         ],
       ),
@@ -140,8 +139,7 @@ class HomeView extends State<HomePage> {
   }
 
   int counter = 0;
-
-  List<Widget> makeContainers() {
+  List<Widget> makeContainers(theList) {
     List<GestureDetector> movieList = [];
     for (int i = 0; i < 5; i++) {
       counter++;
@@ -181,7 +179,7 @@ class HomeView extends State<HomePage> {
                       alignment: Alignment.bottomCenter,
                       width: 150,
                       child: Text(
-                        "Hannover",
+                        theList["name"],
                         style: TextStyle(fontSize: 17),
                       )),
                 ),
